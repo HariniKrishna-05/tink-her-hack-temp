@@ -2,15 +2,15 @@
   <img src="./img.png" alt="Project Banner" width="100%">
 </p>
 
-# [Project Name] 🎯
+# Safario 🎯
 
 ## Basic Details
 
-### Team Name: [Name]
+### Team Name: Double Trouble
 
 ### Team Members
-- Member 1: [Name] - [College]
-- Member 2: [Name] - [College]
+- Member 1: Nivya Sudeesh - LBS Institute of Technology for Women
+- Member 2: Harini M - LBS Institute of Technology for Women
 
 ### Hosted Project Link
 [mention your project hosted link here]
@@ -66,16 +66,6 @@ List the key features of your project:
 ```bash
 [Run commands - e.g., npm start, python app.py]
 ```
-
-### For Hardware:
-
-#### Components Required
-[List all components needed with specifications]
-
-#### Circuit Setup
-[Explain how to set up the circuit]
-
----
 
 ## Project Documentation
 
