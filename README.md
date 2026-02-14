@@ -13,43 +13,46 @@
 - Member 2: Harini M - LBS Institute of Technology for Women
 
 ### Hosted Project Link
-[mention your project hosted link here]
+https://harinikrishna-05.github.io/tink-her-hack-temp/
 
 ### Project Description
-[2-3 lines about what your project does]
+Safario is a travel companion app designed for solo travelers. It matches users with compatible travel buddies, suggests safe routes, and provides real-time safety scores for destinations.
 
 ### The Problem statement
-[What problem are you solving?]
+Solo travelers often face safety concerns, lack of company, and difficulty in planning their trips efficiently. There is no platform that combines buddy matching, safe route suggestions, and destination safety insights in one place.
 
 ### The Solution
-[How are you solving it?]
 
----
+1.Suggesting potential travel buddies with overlapping destinations and dates.
+
+2.Providing safety scores for destinations and routes.
+
+3.Allowing users to send travel requests and coordinate plans securely.
+
 
 ## Technical Details
 
 ### Technologies/Components Used
 
 **For Software:**
-- Languages used: [e.g., JavaScript, Python, Java]
-- Frameworks used: [e.g., React, Django, Spring Boot]
-- Libraries used: [e.g., axios, pandas, JUnit]
-- Tools used: [e.g., VS Code, Git, Docker]
+- Languages used: JavaScript (Frontend & Backend), HTML, CSS
+- Frameworks used: Node.js, Express, Bootstrap
+- Libraries used: Axios, bcrypt.js, MySQL2, EJS (for templating)
+- Tools used: VS Code, Git, Postman
 
 **For Hardware:**
-- Main components: [List main components]
-- Specifications: [Technical specifications]
-- Tools required: [List tools needed]
+  Not applicable (Software-only project)
 
 ---
 
 ## Features
 
 List the key features of your project:
-- Feature 1: [Description]
-- Feature 2: [Description]
-- Feature 3: [Description]
-- Feature 4: [Description]
+
+Matching: Suggest travel companions based on location and travel dates.
+Safety Score: Rate destinations and routes based on crime data and user reviews.
+Travel Requests: Send and accept requests to coordinate travel plans.
+User Dashboard: Personalized panel showing matches, routes, and safety insights.[Description]
 
 ---
 
@@ -73,53 +76,46 @@ List the key features of your project:
 
 #### Screenshots (Add at least 3)
 
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
+<img width="1902" height="907" alt="welcome" src="https://github.com/user-attachments/assets/2a556cc7-8a0c-4762-98f6-c46cdf4dc239" />
+It serves as the landing/welcome page that introduces Safario, shows its purpose of safe solo travel, highlights key benefits, and guides users to sign in or create an account to start using the platform.
 
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
 
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
+
+<img width="1908" height="911" alt="sign in" src="https://github.com/user-attachments/assets/4b909ba6-786d-465f-93ad-1b8cd73ef475" />
+
+
+<img width="1906" height="910" alt="create account" src="https://github.com/user-attachments/assets/1672dde8-a95c-4cdc-aa38-30b0da5ee6cf" />
+
+<img width="1911" height="903" alt="dashboard" src="https://github.com/user-attachments/assets/4b11b945-88b4-450e-a938-c20b9198314f" />
+
+<img width="1912" height="914" alt="profile" src="https://github.com/user-attachments/assets/af6b2d0b-1474-476c-afae-6c71b3ff7353" />
+
+<img width="1905" height="909" alt="safe routes" src="https://github.com/user-attachments/assets/130f5123-4a57-4f16-a375-329c40388f3e" />
+
+<img width="1881" height="898" alt="budies" src="https://github.com/user-attachments/assets/ee67857a-4720-4b8f-867f-fb6b4eb70c98" />
 
 #### Diagrams
 
 **System Architecture:**
 
-![Architecture Diagram](docs/architecture.png)
-*Explain your system architecture - components, data flow, tech stack interaction*
+Frontend: HTML, CSS, JavaScript
+
+Backend: Node.js + Express
+
+Database: MySQL (storing users, destinations, routes, buddy matches)
+
+Workflow: User interacts → server queries database → displays matches/routes → updates safety scores
 
 **Application Workflow:**
 
-![Workflow](docs/workflow.png)
-*Add caption explaining your workflow*
+User logs in or registers.
 
----
+User inputs travel details (destination & dates).
 
-### For Hardware:
+System calculates matches and safety scores.
 
-#### Schematic & Circuit
+User can send travel requests and view matched profiles.
 
-![Circuit](Add your circuit diagram here)
-*Add caption explaining connections*
-
-![Schematic](Add your schematic diagram here)
-*Add caption explaining the schematic*
-
-#### Build Photos
-
-![Team](Add photo of your team here)
-
-![Components](Add photo of your components here)
-*List out all components shown*
-
-![Build](Add photos of build process here)
-*Explain the build steps*
-
-![Final](Add photo of final product here)
-*Explain the final build*
-
----
 
 ## Additional Documentation
 
