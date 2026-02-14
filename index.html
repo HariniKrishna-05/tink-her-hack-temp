@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safario — Explore with Safety</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --forest: #0e1a13;
+      --forest-mid: #152010;
+      --forest-light: #1e2d1a;
+      --moss: #2d4a27;
+      --gold: #c8a96e;
+      --gold-light: #dfc28e;
+      --gold-dim: #a88a52;
+      --cream: #f2ead8;
+      --cream-dim: #c4baa8;
+      --white: #faf8f3;
+      --text-muted: #7a8c73;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--forest);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom Cursor */
+    .cursor {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease;
+    }
+
+    .cursor-ring {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(200, 169, 110, 0.4);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: all 0.18s ease;
+    }
+
+    /* Background */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-gradient {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 30%, rgba(45, 74, 39, 0.25) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 20% 80%, rgba(200, 169, 110, 0.06) 0%, transparent 50%),
+        linear-gradient(160deg, #0e1a13 0%, #111a0e 50%, #0a1209 100%);
+    }
+
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(200,169,110,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,169,110,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* Floating orb */
+    .bg-orb {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(45, 74, 39, 0.18) 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+      animation: orbFloat 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes orbFloat {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(-40px, 60px) scale(1.08); }
+    }
+
+    /* ─── NAVBAR ─── */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 28px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(14, 26, 19, 0.95) 0%, transparent 100%);
+      backdrop-filter: blur(2px);
+      animation: fadeDown 0.8s ease both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      position: relative;
+    }
+
+    .logo::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--cream-dim);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--gold);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--gold-light);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-cta {
+      padding: 9px 22px;
+      border: 1px solid rgba(200, 169, 110, 0.4) !important;
+      border-radius: 2px;
+      color: var(--gold) !important;
+      transition: all 0.3s ease !important;
+    }
+
+    .nav-cta:hover {
+      background: rgba(200, 169, 110, 0.1) !important;
+      border-color: var(--gold) !important;
+    }
+
+    .nav-cta::after {
+      display: none !important;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 0 60px;
+    }
+
+    .hero-content {
+      max-width: 720px;
+      padding-top: 60px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.3s ease forwards;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(60px, 7vw, 96px);
+      font-weight: 300;
+      line-height: 1.0;
+      color: var(--white);
+      letter-spacing: -0.01em;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.5s ease forwards;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--gold);
+      font-weight: 300;
+    }
+
+    .hero-sub {
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--cream-dim);
+      max-width: 440px;
+      margin-bottom: 52px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.7s ease forwards;
+    }
+
+    .hero-buttons {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.9s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      background: var(--gold);
+      color: var(--forest);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      border-radius: 2px;
+      cursor: none;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold-light);
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+    }
+
+    .btn-primary:hover::before {
+      transform: translateX(0);
+    }
+
+    .btn-primary span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-primary .arrow {
+      position: relative;
+      z-index: 1;
+      transition: transform 0.3s ease;
+    }
+
+    .btn-primary:hover .arrow {
+      transform: translateX(4px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 15px 34px;
+      background: transparent;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid rgba(242, 234, 216, 0.2);
+      border-radius: 2px;
+      cursor: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(242, 234, 216, 0.6);
+      color: var(--white);
+      background: rgba(242, 234, 216, 0.05);
+    }
+
+    /* ─── TRUST STRIP ─── */
+    .trust-strip {
+      position: absolute;
+      bottom: 50px;
+      left: 60px;
+      right: 60px;
+      display: flex;
+      align-items: center;
+      gap: 48px;
+      opacity: 0;
+      animation: fadeUp 0.9s 1.2s ease forwards;
+    }
+
+    .trust-divider {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(200,169,110,0.15), transparent);
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .trust-icon {
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(200,169,110,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .trust-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .trust-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      color: var(--gold-light);
+      line-height: 1;
+    }
+
+    .trust-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ─── SIDE ACCENT ─── */
+    .side-accent {
+      position: fixed;
+      right: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      z-index: 50;
+      opacity: 0;
+      animation: fadeIn 1s 1.4s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .side-text {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+
+    .side-line {
+      width: 1px;
+      height: 60px;
+      background: linear-gradient(to bottom, var(--gold-dim), transparent);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 20px 24px;
+      }
+
+      .nav-links {
+        gap: 20px;
+      }
+
+      .hero {
+        padding: 0 24px;
+      }
+
+      .trust-strip {
+        left: 24px;
+        right: 24px;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+
+      .side-accent {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Background -->
+  <div class="bg-layer">
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-orb"></div>
+  </div>
+
+  <!-- Side accent -->
+  <div class="side-accent">
+    <span class="side-text">Safe Travel</span>
+    <div class="side-line"></div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo">Safario</div>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="login.html">Sign In</a>
+      <a href="register.html" class="nav-cta">Get Started</a>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Verified Travel Community</div>
+
+      <h1>Explore the world<br>with <em>Safety</em></h1>
+
+      <p class="hero-sub">
+        Connect with verified travel buddies worldwide. Every journey is safer, richer, and more meaningful when you're never truly alone.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="register.html" class="btn-primary">
+          <span>Create Account</span>
+          <svg class="arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="login.html" class="btn-secondary">Sign In</a>
+      </div>
+    </div>
+
+    <!-- Stats Strip -->
+    <div class="trust-strip">
+      <div class="trust-item">
+        <div class="trust-icon">✦</div>
+        <div class="trust-text">
+          <span class="trust-num">48K+</span>
+          <span class="trust-label">Verified Travelers</span>
+        </div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon">◈</div>
+        <div class="trust-text">
+          <span class="trust-num">120+</span>
+          <span class="trust-label">Countries</span>
+        </div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon">◉</div>
+        <div class="trust-text">
+          <span class="trust-num">99.8%</span>
+          <span class="trust-label">Safe Journeys</span>
+        </div>
+      </div>
+      <div class="trust-divider"></div>
+    </div>
+  </section>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx + 'px';
+      cursor.style.top  = my + 'px';
+    });
+
+    // Ring follows with lag
+    (function animateRing() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px';
+      ring.style.top  = ry + 'px';
+      requestAnimationFrame(animateRing);
+    })();
+
+    // Cursor scale on hover
+    document.querySelectorAll('a, button, .btn-primary, .btn-secondary').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        ring.style.transform  = 'translate(-50%, -50%) scale(1.6)';
+        ring.style.borderColor = 'rgba(200,169,110,0.7)';
+        cursor.style.transform = 'translate(-50%, -50%) scale(0.5)';
+      });
+      el.addEventListener('mouseleave', () => {
+        ring.style.transform  = 'translate(-50%, -50%) scale(1)';
+        ring.style.borderColor = 'rgba(200,169,110,0.4)';
+        cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+      });
+    });
+  </script>
+</body>
+</html>

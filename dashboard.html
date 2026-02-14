@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Safario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --forest:       #0e1a13;
+      --forest-mid:   #111d14;
+      --forest-light: #1a2b1d;
+      --forest-card:  #152018;
+      --moss:         #2d4a27;
+      --gold:         #c8a96e;
+      --gold-light:   #dfc28e;
+      --gold-dim:     #a88a52;
+      --cream:        #f2ead8;
+      --cream-dim:    #c4baa8;
+      --white:        #faf8f3;
+      --text-muted:   #7a8c73;
+      --border:       rgba(200,169,110,0.12);
+      --border-hover: rgba(200,169,110,0.3);
+      --sidebar-w:    240px;
+    }
+
+    body {
+      background: var(--forest);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      cursor: none;
+      overflow: hidden;
+    }
+
+    /* ── CURSOR ── */
+    .cursor      { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform 0.1s ease; }
+    .cursor-ring { position:fixed; width:34px; height:34px; border:1px solid rgba(200,169,110,0.4); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.16s ease; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--forest-mid);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 32px 0;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 50;
+      animation: slideRight 0.7s ease both;
+    }
+
+    @keyframes slideRight {
+      from { opacity:0; transform:translateX(-20px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 28px 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .logo-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      color: var(--gold-light);
+      text-transform: uppercase;
+    }
+
+    .logo-icon {
+      width: 32px; height: 32px;
+      border: 1px solid rgba(200,169,110,0.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold);
+      font-size: 13px;
+    }
+
+    .nav-menu {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0 16px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 3px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .nav-item i { font-size: 14px; width: 16px; text-align: center; }
+
+    .nav-item:hover {
+      color: var(--cream);
+      background: rgba(200,169,110,0.06);
+    }
+
+    .nav-item.active {
+      color: var(--gold);
+      background: rgba(200,169,110,0.08);
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 20%; bottom: 20%;
+      width: 2px;
+      background: var(--gold);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .nav-label {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 16px 28px 8px;
+      opacity: 0.6;
+    }
+
+    .sidebar-footer {
+      padding: 0 16px;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      margin-top: 20px;
+    }
+
+    .sos-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 12px;
+      background: rgba(220, 80, 70, 0.12);
+      border: 1px solid rgba(220, 80, 70, 0.25);
+      border-radius: 3px;
+      color: #e87b72;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: none;
+      transition: all 0.3s ease;
+    }
+
+    .sos-button:hover {
+      background: rgba(220, 80, 70, 0.2);
+      border-color: rgba(220, 80, 70, 0.5);
+    }
+
+    /* ── MAIN ── */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 36px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(14,26,19,0.8);
+      backdrop-filter: blur(12px);
+      position: sticky; top: 0;
+      z-index: 40;
+      animation: fadeDown 0.7s 0.2s ease both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity:0; transform:translateY(-12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .header-left { display: flex; flex-direction: column; gap: 2px; }
+
+    .header-greeting {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .header-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 300;
+      color: var(--white);
+    }
+
+    .header-title em { font-style: italic; color: var(--gold); }
+
+    .search-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 10px 16px;
+      width: 260px;
+      transition: border-color 0.3s;
+    }
+
+    .search-wrapper:focus-within {
+      border-color: var(--border-hover);
+      background: rgba(200,169,110,0.03);
+    }
+
+    .search-icon { color: var(--text-muted); font-size: 13px; }
+
+    .search-input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 300;
+      width: 100%;
+    }
+
+    .search-input::placeholder { color: rgba(196,186,168,0.35); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .notification-btn {
+      position: relative;
+      width: 38px; height: 38px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--cream-dim);
+      font-size: 14px;
+      cursor: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s;
+    }
+
+    .notification-btn:hover {
+      border-color: var(--border-hover);
+      color: var(--gold);
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px; right: -5px;
+      width: 17px; height: 17px;
+      background: var(--gold);
+      color: var(--forest);
+      font-size: 9px;
+      font-weight: 500;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: none;
+    }
+
+    .user-initials {
+      width: 38px; height: 38px;
+      border: 1px solid rgba(200,169,110,0.35);
+      border-radius: 50%;
+      background: rgba(200,169,110,0.08);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── BODY GRID ── */
+    .body-grid {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 0;
+      flex: 1;
+    }
+
+    .body-main {
+      padding: 32px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      animation: fadeUp 0.7s 0.35s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── STATS ── */
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--forest-card);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .stat-icon {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.trips    { background: rgba(200,169,110,0.1);  color: var(--gold); }
+    .stat-icon.countries{ background: rgba(106,173,116,0.1);  color: #6aad74; }
+    .stat-icon.buddies  { background: rgba(100,160,230,0.1);  color: #7ab0e0; }
+    .stat-icon.routes   { background: rgba(220,130,90,0.1);   color: #dc885a; }
+
+    .stat-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 30px;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--white);
+    }
+
+    .section-title::before {
+      content: '';
+      display: block;
+      width: 20px; height: 1px;
+      background: var(--gold);
+    }
+
+    .section-link {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .section-link:hover { color: var(--gold); }
+
+    /* ── DESTINATIONS ── */
+    .destinations-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .destination-card {
+      position: relative;
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: none;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .destination-card:hover {
+      border-color: rgba(200,169,110,0.35);
+      transform: translateY(-3px);
+    }
+
+    .destination-card.featured { grid-row: span 1; }
+
+    .destination-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s ease;
+      filter: brightness(0.75) saturate(0.85);
+    }
+
+    .destination-card:hover .destination-image {
+      transform: scale(1.04);
+    }
+
+    .destination-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(10,18,12,0.85) 0%, transparent 55%);
+    }
+
+    .destination-info {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 16px;
+    }
+
+    .destination-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .safety-score {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(200,169,110,0.15);
+      border: 1px solid rgba(200,169,110,0.25);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+    }
+
+    .safety-score i { font-size: 10px; }
+
+    .bookmark-btn {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 32px; height: 32px;
+      background: rgba(14,26,19,0.7);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--cream-dim);
+      font-size: 13px;
+      cursor: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s;
+      backdrop-filter: blur(4px);
+    }
+
+    .bookmark-btn:hover {
+      color: var(--gold);
+      border-color: var(--gold-dim);
+    }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      border-left: 1px solid var(--border);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      animation: fadeUp 0.7s 0.5s ease both;
+    }
+
+    /* ── BUDDIES ── */
+    .buddies-section { display: flex; flex-direction: column; gap: 6px; }
+
+    .buddies-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .buddy-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 3px;
+      border: 1px solid transparent;
+      transition: all 0.25s;
+    }
+
+    .buddy-item:hover {
+      background: rgba(200,169,110,0.05);
+      border-color: var(--border);
+    }
+
+    .buddy-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-weight: 500;
+      color: #fff;
+      flex-shrink: 0;
+      letter-spacing: 0.05em;
+    }
+
+    .buddy-info { flex: 1; min-width: 0; }
+
+    .buddy-name {
+      font-size: 13px;
+      color: var(--cream);
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .buddy-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-dot.online  { background: #6aad74; box-shadow: 0 0 6px rgba(106,173,116,0.5); }
+    .status-dot.away    { background: #e0b060; }
+    .status-dot.offline { background: #555f55; }
+
+    .message-btn {
+      width: 28px; height: 28px;
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 2px;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s;
+    }
+
+    .message-btn:hover {
+      color: var(--gold);
+      border-color: var(--border);
+      background: rgba(200,169,110,0.06);
+    }
+
+    .add-buddy-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 11px;
+      background: none;
+      border: 1px dashed rgba(200,169,110,0.2);
+      border-radius: 3px;
+      color: var(--gold-dim);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: none;
+      transition: all 0.3s;
+      margin-top: 8px;
+    }
+
+    .add-buddy-btn:hover {
+      border-color: var(--gold-dim);
+      color: var(--gold);
+      background: rgba(200,169,110,0.04);
+    }
+
+    /* ── ACTIVE ROUTES ── */
+    .routes-section { display: flex; flex-direction: column; gap: 6px; }
+
+    .route-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--forest-card);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      transition: border-color 0.25s;
+    }
+
+    .route-item:hover { border-color: var(--border-hover); }
+
+    .route-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .route-info { flex: 1; }
+
+    .route-name {
+      font-size: 13px;
+      color: var(--cream);
+      font-weight: 400;
+    }
+
+    .route-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+
+    .route-score {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      color: var(--gold);
+    }
+
+    /* Scrollbar */
+    .main-content::-webkit-scrollbar { width: 4px; }
+    .main-content::-webkit-scrollbar-track { background: transparent; }
+    .main-content::-webkit-scrollbar-thumb { background: rgba(200,169,110,0.2); border-radius: 2px; }
+
+    @media (max-width: 1100px) {
+      .quick-stats { grid-template-columns: repeat(2, 1fr); }
+      .destinations-grid { grid-template-columns: 1fr 1fr; }
+      .body-grid { grid-template-columns: 1fr; }
+      .right-panel { border-left: none; border-top: 1px solid var(--border); padding: 28px 36px; display: grid; grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="logo-container">
+      <div class="logo-icon"><i class="fas fa-globe"></i></div>
+      <span class="logo-text">Safario</span>
+    </div>
+
+    <nav class="nav-menu">
+      <div class="nav-label">Navigation</div>
+      <a href="#" class="nav-item active" data-section="explore">
+        <i class="fas fa-map-marked-alt"></i><span>Explore</span>
+      </a>
+      <a href="buddies.html" class="nav-item" data-section="buddies">
+        <i class="fas fa-user-friends"></i><span>Buddies</span>
+      </a>
+      <a href="routes.html" class="nav-item" data-section="routes">
+        <i class="fas fa-route"></i><span>Safe Routes</span>
+      </a>
+      <a href="#" class="nav-item" data-section="translate">
+        <i class="fas fa-language"></i><span>Translate</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sos-button">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>SOS Mode</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main-content">
+
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <span class="header-greeting">Good morning</span>
+        <h1 class="header-title">Your <em>Journey</em> Awaits</h1>
+      </div>
+
+      <div class="search-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search destinations…">
+      </div>
+
+      <div class="header-actions">
+        <button class="notification-btn">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge">3</span>
+        </button>
+    
+
+  <!-- Make user profile clickable -->
+  <a href="profile.html" class="user-profile">
+    <span class="user-initials">JD</span>
+  </a>
+</div>
+      </div>
+    </header>
+
+    <!-- Body -->
+    <div class="body-grid">
+      <div class="body-main">
+
+        <!-- Stats -->
+        <section class="quick-stats">
+          <div class="stat-card">
+            <div class="stat-icon trips"><i class="fas fa-suitcase-rolling"></i></div>
+            <div class="stat-info">
+              <div class="stat-value">24</div>
+              <div class="stat-label">Trips Planned</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon countries"><i class="fas fa-flag"></i></div>
+            <div class="stat-info">
+              <div class="stat-value">12</div>
+              <div class="stat-label">Countries Visited</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon buddies"><i class="fas fa-users"></i></div>
+            <div class="stat-info">
+              <div class="stat-value">48</div>
+              <div class="stat-label">Travel Buddies</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon routes"><i class="fas fa-map"></i></div>
+            <div class="stat-info">
+              <div class="stat-value">156</div>
+              <div class="stat-label">Safe Routes</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Destinations -->
+        <section>
+          <div class="section-header">
+            <h2 class="section-title">Featured Destinations</h2>
+            <a href="#" class="section-link">View all →</a>
+          </div>
+
+          <div class="destinations-grid">
+            <div class="destination-card featured">
+              <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80" alt="Kyoto" class="destination-image">
+              <div class="destination-overlay"></div>
+              <div class="destination-info">
+                <h3 class="destination-title">Safe Route to Kyoto</h3>
+                <div class="safety-score"><i class="fas fa-shield-alt"></i> 98% Safety Score</div>
+              </div>
+              <button class="bookmark-btn"><i class="far fa-bookmark"></i></button>
+            </div>
+
+            <div class="destination-card">
+              <img src="https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&q=80" alt="Paris" class="destination-image">
+              <div class="destination-overlay"></div>
+              <div class="destination-info">
+                <h3 class="destination-title">Paris Adventure</h3>
+                <div class="safety-score"><i class="fas fa-shield-alt"></i> 95%</div>
+              </div>
+              <button class="bookmark-btn"><i class="far fa-bookmark"></i></button>
+            </div>
+
+            <div class="destination-card">
+              <img src="https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=800&q=80" alt="Tokyo" class="destination-image">
+              <div class="destination-overlay"></div>
+              <div class="destination-info">
+                <h3 class="destination-title">Tokyo Nights</h3>
+                <div class="safety-score"><i class="fas fa-shield-alt"></i> 97%</div>
+              </div>
+              <button class="bookmark-btn"><i class="far fa-bookmark"></i></button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Right Panel -->
+      <div class="right-panel">
+
+        <!-- Travel Buddies -->
+        <div class="buddies-section">
+          <div class="section-header">
+            <h2 class="section-title" style="font-size:18px;">Buddies</h2>
+            <a href="#" class="section-link">All →</a>
+          </div>
+
+          <div class="buddies-list">
+            <div class="buddy-item">
+              <div class="buddy-avatar" style="background:linear-gradient(135deg,#4a7a50,#2d4a27)"><span>SM</span></div>
+              <div class="buddy-info">
+                <div class="buddy-name">Sarah Martinez</div>
+                <div class="buddy-status"><span class="status-dot online"></span><span>Online</span></div>
+              </div>
+              <button class="message-btn"><i class="fas fa-comment-dots"></i></button>
+            </div>
+
+            <div class="buddy-item">
+              <div class="buddy-avatar" style="background:linear-gradient(135deg,#a88a52,#7a6038)"><span>MC</span></div>
+              <div class="buddy-info">
+                <div class="buddy-name">Mike Chen</div>
+                <div class="buddy-status"><span class="status-dot away"></span><span>Away</span></div>
+              </div>
+              <button class="message-btn"><i class="fas fa-comment-dots"></i></button>
+            </div>
+
+            <div class="buddy-item">
+              <div class="buddy-avatar" style="background:linear-gradient(135deg,#3a6b5a,#1e3d30)"><span>EP</span></div>
+              <div class="buddy-info">
+                <div class="buddy-name">Emma Parker</div>
+                <div class="buddy-status"><span class="status-dot online"></span><span>Online</span></div>
+              </div>
+              <button class="message-btn"><i class="fas fa-comment-dots"></i></button>
+            </div>
+
+            <div class="buddy-item">
+              <div class="buddy-avatar" style="background:linear-gradient(135deg,#5a4a3a,#3a2e22)"><span>DK</span></div>
+              <div class="buddy-info">
+                <div class="buddy-name">David Kim</div>
+                <div class="buddy-status"><span class="status-dot offline"></span><span>Offline</span></div>
+              </div>
+              <button class="message-btn"><i class="fas fa-comment-dots"></i></button>
+            </div>
+          </div>
+
+          <button class="add-buddy-btn">
+            <i class="fas fa-user-plus"></i><span>Add New Buddy</span>
+          </button>
+        </div>
+
+        <!-- Active Routes -->
+        <div class="routes-section">
+          <div class="section-header">
+            <h2 class="section-title" style="font-size:18px;">Active Routes</h2>
+          </div>
+
+          <div class="buddy-item" style="display:flex;flex-direction:column;gap:8px;padding:0">
+            <div class="route-item">
+              <div class="route-dot"></div>
+              <div class="route-info">
+                <div class="route-name">Kyoto Heritage Trail</div>
+                <div class="route-meta">Japan · 3 checkpoints</div>
+              </div>
+              <span class="route-score">98%</span>
+            </div>
+            <div class="route-item">
+              <div class="route-dot" style="background:#6aad74"></div>
+              <div class="route-info">
+                <div class="route-name">Paris Central Loop</div>
+                <div class="route-meta">France · 5 checkpoints</div>
+              </div>
+              <span class="route-score">95%</span>
+            </div>
+            <div class="route-item">
+              <div class="route-dot" style="background:#7ab0e0"></div>
+              <div class="route-info">
+                <div class="route-name">Tokyo Night District</div>
+                <div class="route-meta">Japan · 4 checkpoints</div>
+              </div>
+              <span class="route-score">97%</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+  <script>
+    // Nav active state
+    document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', e => {
+    if (!item.getAttribute('href') || item.getAttribute('href') === '#') {
+      e.preventDefault();
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    }
+  });
+});
+
+
+    // Cursor
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove', e => {
+      mx=e.clientX; my=e.clientY;
+      cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+    });
+    (function animateRing(){
+      rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+      ring.style.left=rx+'px'; ring.style.top=ry+'px';
+      requestAnimationFrame(animateRing);
+    })();
+    document.querySelectorAll('a,button,input,.destination-card,.buddy-item,.stat-card').forEach(el => {
+      el.addEventListener('mouseenter', () => { ring.style.transform='translate(-50%,-50%) scale(1.5)'; ring.style.borderColor='rgba(200,169,110,0.7)'; });
+      el.addEventListener('mouseleave', () => { ring.style.transform='translate(-50%,-50%) scale(1)';   ring.style.borderColor='rgba(200,169,110,0.4)'; });
+    });
+
+    // Greeting by time
+    const hour = new Date().getHours();
+    const greetEl = document.querySelector('.header-greeting');
+    if (greetEl) {
+      greetEl.textContent = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    }
+  </script>
+</body>
+</html>

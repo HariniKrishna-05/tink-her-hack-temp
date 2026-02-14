@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Safario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --forest:      #0e1a13;
+      --forest-mid:  #152010;
+      --forest-light:#1e2d1a;
+      --moss:        #2d4a27;
+      --gold:        #c8a96e;
+      --gold-light:  #dfc28e;
+      --gold-dim:    #a88a52;
+      --cream:       #f2ead8;
+      --cream-dim:   #c4baa8;
+      --white:       #faf8f3;
+      --text-muted:  #7a8c73;
+      --border:      rgba(200,169,110,0.15);
+      --border-focus:rgba(200,169,110,0.5);
+    }
+
+    body {
+      background-color: var(--forest);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      overflow: hidden;
+      cursor: none;
+    }
+
+    /* Cursor */
+    .cursor     { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform 0.1s ease; }
+    .cursor-ring{ position:fixed; width:36px; height:36px; border:1px solid rgba(200,169,110,0.4); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.18s ease; }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      position: relative;
+      width: 45%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px 50px;
+      overflow: hidden;
+    }
+
+    .left-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 90% 70% at 30% 40%, rgba(45,74,39,0.35) 0%, transparent 65%),
+        linear-gradient(160deg, #0a1a0e 0%, #0e1a13 100%);
+    }
+
+    .left-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(200,169,110,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,169,110,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    .left-orb {
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(45,74,39,0.22) 0%, transparent 70%);
+      bottom: -150px; right: -150px;
+      animation: orbFloat 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes orbFloat {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(-30px, -40px) scale(1.06); }
+    }
+
+    .left-content { position: relative; z-index: 1; }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      text-decoration: none;
+      display: inline-block;
+      position: relative;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .logo::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+    }
+
+    .left-bottom { position: relative; z-index: 1; }
+
+    .left-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 4vw, 56px);
+      font-weight: 300;
+      line-height: 1.1;
+      color: var(--white);
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.4s ease forwards;
+    }
+
+    .left-quote em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .left-desc {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--cream-dim);
+      line-height: 1.7;
+      max-width: 320px;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.6s ease forwards;
+    }
+
+    .left-stats {
+      display: flex;
+      gap: 36px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.8s ease forwards;
+    }
+
+    .stat-item { display: flex; flex-direction: column; gap: 2px; }
+
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      color: var(--gold-light);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .stat-divider {
+      width: 1px;
+      background: var(--border);
+      align-self: stretch;
+    }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 60px;
+      background: rgba(10,16,11,0.6);
+      backdrop-filter: blur(8px);
+      border-left: 1px solid var(--border);
+      position: relative;
+    }
+
+    .right-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .auth-form {
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .form-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.5s ease forwards;
+    }
+
+    .form-eyebrow::before {
+      content: '';
+      display: block;
+      width: 24px; height: 1px;
+      background: var(--gold);
+    }
+
+    .form-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 44px;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 8px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.65s ease forwards;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+      color: var(--cream-dim);
+      font-weight: 300;
+      margin-bottom: 44px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.8s ease forwards;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.95s ease forwards;
+    }
+
+    .field {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .field input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.3s ease, background 0.3s ease;
+    }
+
+    .field input::placeholder {
+      color: rgba(196,186,168,0.3);
+    }
+
+    .field input:focus {
+      border-color: var(--border-focus);
+      background: rgba(200,169,110,0.04);
+    }
+
+    .field-hint {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .field-hint a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .field-hint a:hover { color: var(--gold); }
+
+    .btn-submit {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      background: var(--gold);
+      color: var(--forest);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 2px;
+      cursor: none;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      opacity: 0;
+      animation: fadeUp 0.8s 1.1s ease forwards;
+    }
+
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold-light);
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+    }
+
+    .btn-submit:hover::before { transform: translateX(0); }
+
+    .btn-submit span, .btn-submit svg { position: relative; z-index: 1; }
+
+    .btn-submit .arrow { transition: transform 0.3s ease; }
+    .btn-submit:hover .arrow { transform: translateX(4px); }
+
+    .form-footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 13px;
+      color: var(--text-muted);
+      opacity: 0;
+      animation: fadeUp 0.8s 1.25s ease forwards;
+    }
+
+    .form-footer a {
+      color: var(--gold);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .form-footer a:hover { color: var(--gold-light); }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 28px 0;
+      opacity: 0;
+      animation: fadeUp 0.8s 1.15s ease forwards;
+    }
+
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-text { font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    @keyframes fadeDown {
+      from { opacity:0; transform:translateY(-16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .left-panel { width: 100%; min-height: auto; padding: 28px 24px 40px; }
+      .left-quote { font-size: 36px; }
+      .right-panel { padding: 40px 24px; border-left: none; border-top: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Left Panel -->
+  <div class="left-panel">
+    <div class="left-bg"></div>
+    <div class="left-grid"></div>
+    <div class="left-orb"></div>
+
+    <div class="left-content">
+      <a href="index.html" class="logo">Safario</a>
+    </div>
+
+    <div class="left-bottom">
+      <h2 class="left-quote">Every journey<br>begins with<br><em>trust.</em></h2>
+      <p class="left-desc">Sign in to reconnect with your community of verified travel buddies around the world.</p>
+      <div class="left-stats">
+        <div class="stat-item">
+          <span class="stat-num">48K+</span>
+          <span class="stat-label">Travelers</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num">120+</span>
+          <span class="stat-label">Countries</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num">99.8%</span>
+          <span class="stat-label">Safe Journeys</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="right-panel">
+    <div class="auth-form">
+      <div class="form-eyebrow">Welcome back</div>
+      <h1 class="form-title">Sign In</h1>
+      <p class="form-subtitle">Enter your credentials to continue your journey.</p>
+
+      <div class="field-group">
+        <div class="field">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••">
+          <div class="field-hint">
+            <a href="#">Forgot password?</a>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="login()">
+        <span>Sign In</span>
+        <svg class="arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">or</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <p class="form-footer">
+        Don't have an account? <a href="register.html">Create one →</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx+'px'; cursor.style.top = my+'px';
+    });
+    (function animateRing(){
+      rx += (mx-rx)*0.12; ry += (my-ry)*0.12;
+      ring.style.left = rx+'px'; ring.style.top = ry+'px';
+      requestAnimationFrame(animateRing);
+    })();
+    document.querySelectorAll('a,button,input').forEach(el=>{
+      el.addEventListener('mouseenter',()=>{ ring.style.transform='translate(-50%,-50%) scale(1.5)'; ring.style.borderColor='rgba(200,169,110,0.7)'; });
+      el.addEventListener('mouseleave',()=>{ ring.style.transform='translate(-50%,-50%) scale(1)'; ring.style.borderColor='rgba(200,169,110,0.4)'; });
+    });
+  </script>
+</body>
+</html>

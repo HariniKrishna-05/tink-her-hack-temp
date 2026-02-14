@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safario — Find Travel Buddies</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --forest:      #0e1a13;
+      --forest-mid:  #152010;
+      --forest-light:#1e2d1a;
+      --moss:        #2d4a27;
+      --gold:        #c8a96e;
+      --gold-light:  #dfc28e;
+      --gold-dim:    #a88a52;
+      --cream:       #f2ead8;
+      --cream-dim:   #c4baa8;
+      --white:       #faf8f3;
+      --text-muted:  #7a8c73;
+      --card-bg:     rgba(21, 32, 16, 0.7);
+      --card-border: rgba(200, 169, 110, 0.12);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--forest);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ─── CURSOR ─── */
+    .cursor {
+      position: fixed; width: 8px; height: 8px;
+      background: var(--gold); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease;
+    }
+    .cursor-ring {
+      position: fixed; width: 36px; height: 36px;
+      border: 1px solid rgba(200,169,110,0.4); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: all 0.18s ease;
+    }
+
+    /* ─── BACKGROUND ─── */
+    .bg-layer { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+    .bg-gradient {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 30%, rgba(45,74,39,0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 20% 80%, rgba(200,169,110,0.05) 0%, transparent 50%),
+        linear-gradient(160deg, #0e1a13 0%, #111a0e 50%, #0a1209 100%);
+    }
+    .bg-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(200,169,110,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,169,110,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .bg-orb {
+      position: absolute; width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(45,74,39,0.15) 0%, transparent 70%);
+      top: -100px; right: -100px;
+      animation: orbFloat 12s ease-in-out infinite alternate;
+    }
+    @keyframes orbFloat {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(-40px,60px) scale(1.08); }
+    }
+
+    /* ─── NAVBAR ─── */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 28px 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(14,26,19,0.96) 0%, transparent 100%);
+      backdrop-filter: blur(2px);
+      animation: fadeDown 0.8s ease both;
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px; font-weight: 400;
+      letter-spacing: 0.12em; color: var(--gold-light);
+      text-transform: uppercase; position: relative; text-decoration: none;
+    }
+    .logo::after {
+      content: ''; position: absolute; bottom: -3px; left: 0;
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+    }
+    .nav-links { display: flex; align-items: center; gap: 40px; }
+    .nav-links a {
+      text-decoration: none; color: var(--cream-dim);
+      font-size: 13px; font-weight: 400;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      position: relative; transition: color 0.3s ease;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px; background: var(--gold); transition: width 0.3s ease;
+    }
+    .nav-links a:hover { color: var(--gold-light); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      padding: 9px 22px;
+      border: 1px solid rgba(200,169,110,0.4) !important;
+      border-radius: 2px; color: var(--gold) !important;
+      transition: all 0.3s ease !important;
+    }
+    .nav-cta:hover {
+      background: rgba(200,169,110,0.1) !important;
+      border-color: var(--gold) !important;
+    }
+    .nav-cta::after { display: none !important; }
+
+    /* ─── SIDE ACCENT ─── */
+    .side-accent {
+      position: fixed; right: 40px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      z-index: 50; opacity: 0; animation: fadeIn 1s 1.2s ease forwards;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .side-text {
+      font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--text-muted); writing-mode: vertical-rl; text-orientation: mixed;
+    }
+    .side-line {
+      width: 1px; height: 60px;
+      background: linear-gradient(to bottom, var(--gold-dim), transparent);
+    }
+
+    /* ─── PAGE WRAPPER ─── */
+    .page {
+      position: relative; z-index: 1;
+      padding: 140px 60px 80px;
+      max-width: 1280px; margin: 0 auto;
+    }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      margin-bottom: 56px;
+      opacity: 0; animation: fadeUp 0.9s 0.3s ease forwards;
+    }
+    .page-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 20px;
+    }
+    .page-eyebrow::before {
+      content: ''; display: block; width: 32px; height: 1px; background: var(--gold);
+    }
+    .page-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(40px, 5vw, 68px);
+      font-weight: 300; line-height: 1.05;
+      color: var(--white); letter-spacing: -0.01em;
+      margin-bottom: 16px;
+    }
+    .page-header h1 em { font-style: italic; color: var(--gold); }
+    .page-header p {
+      font-size: 15px; color: var(--cream-dim);
+      line-height: 1.7; max-width: 480px;
+    }
+
+    /* ─── TRIP CONTEXT BANNER ─── */
+    .trip-banner {
+      display: flex; align-items: center; gap: 24px;
+      padding: 20px 28px;
+      background: rgba(45, 74, 39, 0.15);
+      border: 1px solid rgba(200,169,110,0.15);
+      border-radius: 4px; margin-bottom: 48px;
+      opacity: 0; animation: fadeUp 0.9s 0.5s ease forwards;
+    }
+    .trip-banner-icon {
+      width: 40px; height: 40px; flex-shrink: 0;
+      border: 1px solid rgba(200,169,110,0.25); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--gold);
+    }
+    .trip-banner-info { flex: 1; }
+    .trip-banner-label {
+      font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 4px;
+    }
+    .trip-banner-dest {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; color: var(--gold-light); font-weight: 400;
+    }
+    .trip-banner-dates {
+      font-size: 12px; color: var(--cream-dim); margin-top: 2px;
+    }
+    .trip-banner-count {
+      text-align: right;
+    }
+    .trip-banner-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px; color: var(--gold-light); line-height: 1;
+    }
+    .trip-banner-cnt-label {
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ─── CONTROLS ROW ─── */
+    .controls-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+      opacity: 0; animation: fadeUp 0.9s 0.6s ease forwards;
+    }
+    .filter-tabs {
+      display: flex; gap: 4px;
+      background: rgba(21,32,16,0.6);
+      border: 1px solid rgba(200,169,110,0.1);
+      border-radius: 3px; padding: 4px;
+    }
+    .filter-tab {
+      padding: 7px 18px;
+      background: transparent; border: none; border-radius: 2px;
+      font-family: 'DM Sans', sans-serif; font-size: 12px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-muted); cursor: none;
+      transition: all 0.25s ease;
+    }
+    .filter-tab.active, .filter-tab:hover {
+      background: rgba(200,169,110,0.12);
+      color: var(--gold-light);
+    }
+    .sort-select {
+      background: rgba(21,32,16,0.6);
+      border: 1px solid rgba(200,169,110,0.15);
+      border-radius: 3px; padding: 8px 16px;
+      font-family: 'DM Sans', sans-serif; font-size: 12px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--cream-dim); cursor: pointer;
+      appearance: none; outline: none;
+      transition: border-color 0.3s ease;
+    }
+    .sort-select:hover { border-color: rgba(200,169,110,0.35); }
+
+    /* ─── BUDDY GRID ─── */
+    .buddy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* ─── BUDDY CARD ─── */
+    .buddy-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 4px; padding: 32px;
+      position: relative; overflow: hidden;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards;
+    }
+    .buddy-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200,169,110,0.3), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    .buddy-card:hover::before { transform: translateX(0); }
+    .buddy-card:hover {
+      border-color: rgba(200,169,110,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 24px 48px rgba(0,0,0,0.3), 0 0 0 1px rgba(200,169,110,0.08);
+    }
+
+    /* Card corner ornament */
+    .buddy-card::after {
+      content: '';
+      position: absolute; bottom: 0; right: 0;
+      width: 60px; height: 60px;
+      background: radial-gradient(circle at 100% 100%, rgba(200,169,110,0.06) 0%, transparent 70%);
+    }
+
+    .card-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 24px;
+    }
+
+    .card-avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 1px solid rgba(200,169,110,0.25);
+      background: linear-gradient(135deg, var(--moss), var(--forest-mid));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; color: var(--gold-light); font-weight: 400;
+      flex-shrink: 0;
+    }
+
+    .card-name-block { flex: 1; padding-left: 14px; }
+    .card-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px; font-weight: 400; color: var(--white);
+      line-height: 1.1; margin-bottom: 4px;
+    }
+    .card-verified {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold-dim);
+    }
+    .card-verified-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--gold);
+    }
+
+    .card-match-badge {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px; color: var(--gold);
+      border: 1px solid rgba(200,169,110,0.2);
+      padding: 3px 10px; border-radius: 2px; white-space: nowrap;
+    }
+
+    .card-divider {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, rgba(200,169,110,0.12), transparent);
+      margin-bottom: 20px;
+    }
+
+    .card-meta { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+
+    .card-row {
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .card-row-icon {
+      width: 26px; height: 26px; flex-shrink: 0;
+      border: 1px solid rgba(200,169,110,0.15); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--gold); margin-top: 1px;
+    }
+    .card-row-content {}
+    .card-row-label {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-muted); display: block; margin-bottom: 2px;
+    }
+    .card-row-value {
+      font-size: 13px; color: var(--cream-dim); line-height: 1.4;
+    }
+
+    .card-tags {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px;
+    }
+    .card-tag {
+      padding: 4px 12px;
+      background: rgba(45,74,39,0.3);
+      border: 1px solid rgba(200,169,110,0.1);
+      border-radius: 2px;
+      font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--cream-dim);
+    }
+
+    .card-actions { display: flex; gap: 10px; }
+
+    .btn-request {
+      flex: 1; padding: 12px 20px;
+      background: var(--gold); color: var(--forest);
+      font-family: 'DM Sans', sans-serif; font-size: 12px;
+      font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+      border: none; border-radius: 2px; cursor: none;
+      position: relative; overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .btn-request::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--gold-light); transform: translateX(-100%);
+      transition: transform 0.4s ease;
+    }
+    .btn-request:hover::before { transform: translateX(0); }
+    .btn-request span { position: relative; z-index: 1; }
+    .btn-request:disabled {
+      background: var(--moss); color: var(--text-muted); cursor: not-allowed;
+    }
+    .btn-request:disabled::before { display: none; }
+
+    .btn-view {
+      padding: 12px 16px;
+      background: transparent;
+      border: 1px solid rgba(200,169,110,0.2); border-radius: 2px;
+      color: var(--gold-dim); font-size: 14px;
+      cursor: none; transition: all 0.3s ease;
+    }
+    .btn-view:hover {
+      border-color: rgba(200,169,110,0.5);
+      color: var(--gold); background: rgba(200,169,110,0.06);
+    }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-state {
+      grid-column: 1 / -1;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 100px 40px; text-align: center;
+      opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards;
+    }
+    .empty-icon {
+      width: 72px; height: 72px;
+      border: 1px solid rgba(200,169,110,0.2); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; color: var(--gold-dim); margin-bottom: 24px;
+    }
+    .empty-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px; font-weight: 300; color: var(--white); margin-bottom: 12px;
+    }
+    .empty-sub {
+      font-size: 14px; color: var(--text-muted); max-width: 340px; line-height: 1.6;
+    }
+
+    /* ─── LOADING STATE ─── */
+    .loading-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .skeleton-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 4px; padding: 32px;
+    }
+    .skel {
+      border-radius: 2px;
+      background: linear-gradient(90deg,
+        rgba(200,169,110,0.05) 0%,
+        rgba(200,169,110,0.12) 50%,
+        rgba(200,169,110,0.05) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite;
+    }
+    @keyframes shimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
+    }
+    .skel-avatar { width: 48px; height: 48px; border-radius: 50%; margin-bottom: 20px; }
+    .skel-line { height: 12px; margin-bottom: 10px; }
+    .skel-line.w80 { width: 80%; }
+    .skel-line.w60 { width: 60%; }
+    .skel-line.w40 { width: 40%; }
+
+    /* ─── NOTIFICATION TOAST ─── */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--forest-light);
+      border: 1px solid rgba(200,169,110,0.25); border-radius: 4px;
+      padding: 14px 24px; display: flex; align-items: center; gap: 12px;
+      font-size: 13px; color: var(--cream);
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+      opacity: 0; z-index: 200; white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast-icon { font-size: 16px; }
+    .toast.success { border-color: rgba(100,180,80,0.3); }
+    .toast.error   { border-color: rgba(200,80,80,0.3); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .navbar   { padding: 20px 24px; }
+      .nav-links { gap: 20px; }
+      .page     { padding: 110px 24px 60px; }
+      .side-accent { display: none; }
+      .trip-banner { flex-wrap: wrap; }
+      .buddy-grid  { grid-template-columns: 1fr; }
+      .controls-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Background -->
+  <div class="bg-layer">
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-orb"></div>
+  </div>
+
+  <!-- Side accent -->
+  <div class="side-accent">
+    <span class="side-text">Find Companions</span>
+    <div class="side-line"></div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <a href="index.html" class="logo">Safario</a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="buddies.html">Find Buddies</a>
+      <a href="login.html" class="nav-cta">Sign Out</a>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="page">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-eyebrow">Your Journey</div>
+      <h1>Find your <em>travel</em><br>companions</h1>
+      <p>Matched to your destination and travel window — every person listed is going where you're going.</p>
+    </div>
+
+    <!-- Trip Context Banner -->
+    <div class="trip-banner" id="tripBanner" style="display:none;">
+      <div class="trip-banner-icon">◈</div>
+      <div class="trip-banner-info">
+        <div class="trip-banner-label">Your Trip</div>
+        <div class="trip-banner-dest" id="bannerDest">—</div>
+        <div class="trip-banner-dates" id="bannerDates">—</div>
+      </div>
+      <div class="trip-banner-count">
+        <div class="trip-banner-num" id="bannerCount">0</div>
+        <div class="trip-banner-cnt-label">Matches Found</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-row">
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All Travelers</button>
+        <button class="filter-tab" data-filter="solo">Solo</button>
+        <button class="filter-tab" data-filter="adventure">Adventure</button>
+        <button class="filter-tab" data-filter="culture">Culture</button>
+      </div>
+      <select class="sort-select" id="sortSelect">
+        <option value="default">Sort: Best Match</option>
+        <option value="name">Sort: Name</option>
+        <option value="dates">Sort: Dates</option>
+      </select>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-grid" id="loadingState">
+      <div class="skeleton-card">
+        <div class="skel skel-avatar"></div>
+        <div class="skel skel-line w80"></div>
+        <div class="skel skel-line w60"></div>
+        <div class="skel skel-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skel skel-avatar"></div>
+        <div class="skel skel-line w80"></div>
+        <div class="skel skel-line w60"></div>
+        <div class="skel skel-line w40"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skel skel-avatar"></div>
+        <div class="skel skel-line w80"></div>
+        <div class="skel skel-line w60"></div>
+        <div class="skel skel-line w40"></div>
+      </div>
+    </div>
+
+    <!-- Buddy Grid -->
+    <div class="buddy-grid" id="buddy-list" style="display:none;"></div>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <span class="toast-icon" id="toastIcon">✦</span>
+    <span id="toastMsg">Request sent!</span>
+  </div>
+
+  <script>
+    /* ─── CONFIG ─── */
+    const API = "http://localhost:5000";
+    const userId = parseInt(localStorage.getItem("user_id") || "1");
+
+    /* ─── CURSOR ─── */
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    });
+    (function animateRing() {
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(animateRing);
+    })();
+    function attachCursorScale(el) {
+      el.addEventListener('mouseenter', () => {
+        ring.style.transform = 'translate(-50%,-50%) scale(1.6)';
+        ring.style.borderColor = 'rgba(200,169,110,0.7)';
+        cursor.style.transform = 'translate(-50%,-50%) scale(0.5)';
+      });
+      el.addEventListener('mouseleave', () => {
+        ring.style.transform = 'translate(-50%,-50%) scale(1)';
+        ring.style.borderColor = 'rgba(200,169,110,0.4)';
+        cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+      });
+    }
+
+    /* ─── TOAST ─── */
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      document.getElementById('toastMsg').textContent = msg;
+      icon.textContent = type === 'success' ? '✦' : '✕';
+      t.className = `toast ${type}`;
+      void t.offsetWidth;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    /* ─── HELPERS ─── */
+    function initials(first, last) {
+      return ((first?.[0] || '') + (last?.[0] || '')).toUpperCase();
+    }
+
+    function formatDate(d) {
+      if (!d) return '—';
+      return new Date(d).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+    }
+
+    function tagsFromInterests(str) {
+      if (!str) return [];
+      return str.split(',').map(s => s.trim()).filter(Boolean).slice(0, 4);
+    }
+
+    function matchScore() {
+      // Visual placeholder score (in production: real algorithm)
+      return Math.floor(Math.random() * 25 + 75) + '%';
+    }
+
+    /* ─── STATE ─── */
+    let allBuddies = [];
+    let sentRequests = new Set();
+
+    /* ─── RENDER CARDS ─── */
+    function renderBuddies(buddies) {
+      const container = document.getElementById('buddy-list');
+      container.innerHTML = '';
+
+      if (buddies.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">◈</div>
+            <h2 class="empty-title">No matches yet</h2>
+            <p class="empty-sub">No other travelers are heading to your destination in your travel window — check back later.</p>
+          </div>`;
+        return;
+      }
+
+      buddies.forEach((b, i) => {
+        const tags = tagsFromInterests(b.interests);
+        const alreadySent = sentRequests.has(b.id);
+
+        const card = document.createElement('div');
+        card.className = 'buddy-card';
+        card.dataset.style = (b.travel_style || '').toLowerCase();
+        card.style.animationDelay = `${0.08 * i}s`;
+
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-avatar">${initials(b.first_name, b.last_name)}</div>
+            <div class="card-name-block">
+              <div class="card-name">${b.first_name} ${b.last_name}</div>
+              <div class="card-verified">
+                <span class="card-verified-dot"></span>
+                Verified Member
+              </div>
+            </div>
+            <div class="card-match-badge">${matchScore()} match</div>
+          </div>
+
+          <div class="card-divider"></div>
+
+          <div class="card-meta">
+            <div class="card-row">
+              <div class="card-row-icon">◈</div>
+              <div class="card-row-content">
+                <span class="card-row-label">Destination</span>
+                <span class="card-row-value">${b.destination || '—'}</span>
+              </div>
+            </div>
+            <div class="card-row">
+              <div class="card-row-icon">◉</div>
+              <div class="card-row-content">
+                <span class="card-row-label">Travel Dates</span>
+                <span class="card-row-value">${formatDate(b.start_date)} — ${formatDate(b.end_date)}</span>
+              </div>
+            </div>
+            <div class="card-row">
+              <div class="card-row-icon">✦</div>
+              <div class="card-row-content">
+                <span class="card-row-label">Travel Style</span>
+                <span class="card-row-value">${b.travel_style || '—'}</span>
+              </div>
+            </div>
+          </div>
+
+          ${tags.length > 0 ? `
+          <div class="card-tags">
+            ${tags.map(t => `<span class="card-tag">${t}</span>`).join('')}
+          </div>` : ''}
+
+          <div class="card-actions">
+            <button
+              class="btn-request"
+              id="req-btn-${b.id}"
+              onclick="sendRequest(${userId}, ${b.id}, ${b.trip_id || 0})"
+              ${alreadySent ? 'disabled' : ''}
+            >
+              <span>${alreadySent ? '✓ Request Sent' : 'Send Request'}</span>
+            </button>
+            <button class="btn-view" title="View Profile">→</button>
+          </div>
+        `;
+
+        container.appendChild(card);
+        // attach cursor scale to interactive elements
+        attachCursorScale(card.querySelector('.btn-request'));
+        attachCursorScale(card.querySelector('.btn-view'));
+      });
+    }
+
+    /* ─── FILTER ─── */
+    function applyFilter(filter) {
+      if (filter === 'all') return renderBuddies(allBuddies);
+      const filtered = allBuddies.filter(b =>
+        (b.travel_style || '').toLowerCase().includes(filter) ||
+        (b.interests  || '').toLowerCase().includes(filter)
+      );
+      renderBuddies(filtered);
+    }
+
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      attachCursorScale(tab);
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        applyFilter(tab.dataset.filter);
+      });
+    });
+
+    attachCursorScale(document.getElementById('sortSelect'));
+
+    /* ─── LOAD BUDDIES ─── */
+    async function loadBuddies() {
+      try {
+        const res  = await fetch(`${API}/buddies/${userId}`);
+        const data = await res.json();
+        allBuddies = data.buddies || [];
+
+        // Update banner
+        if (allBuddies.length > 0) {
+          const first = allBuddies[0];
+          document.getElementById('bannerDest').textContent  = first.destination || '—';
+          document.getElementById('bannerDates').textContent =
+            `${formatDate(first.start_date)} — ${formatDate(first.end_date)}`;
+        }
+        document.getElementById('bannerCount').textContent = allBuddies.length;
+        document.getElementById('tripBanner').style.display = 'flex';
+
+        // Hide loader, show grid
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('buddy-list').style.display   = 'grid';
+
+        renderBuddies(allBuddies);
+      } catch (err) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('buddy-list').style.display   = 'grid';
+        document.getElementById('buddy-list').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">✕</div>
+            <h2 class="empty-title">Connection error</h2>
+            <p class="empty-sub">Could not reach the server. Make sure the backend is running on port 5000.</p>
+          </div>`;
+        showToast('Could not load buddies — server unreachable', 'error');
+      }
+    }
+
+    /* ─── SEND REQUEST ─── */
+    async function sendRequest(senderId, receiverId, tripId) {
+      const btn = document.getElementById(`req-btn-${receiverId}`);
+      if (!btn || btn.disabled) return;
+
+      btn.disabled = true;
+      btn.querySelector('span').textContent = 'Sending…';
+
+      try {
+        const res  = await fetch(`${API}/request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sender_id: senderId, receiver_id: receiverId, trip_id: tripId })
+        });
+        const data = await res.json();
+
+        sentRequests.add(receiverId);
+        btn.querySelector('span').textContent = '✓ Request Sent';
+        showToast(data.message || 'Request sent successfully!', 'success');
+      } catch (err) {
+        btn.disabled = false;
+        btn.querySelector('span').textContent = 'Send Request';
+        showToast('Failed to send request. Try again.', 'error');
+      }
+    }
+
+    /* ─── INIT ─── */
+    loadBuddies();
+
+    // Attach cursor scale to nav links
+    document.querySelectorAll('a, button').forEach(attachCursorScale);
+  </script>
+
+</body>
+</html>

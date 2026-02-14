@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — Safario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --forest:      #0e1a13;
+      --forest-mid:  #152010;
+      --forest-light:#1e2d1a;
+      --moss:        #2d4a27;
+      --gold:        #c8a96e;
+      --gold-light:  #dfc28e;
+      --gold-dim:    #a88a52;
+      --cream:       #f2ead8;
+      --cream-dim:   #c4baa8;
+      --white:       #faf8f3;
+      --text-muted:  #7a8c73;
+      --border:      rgba(200,169,110,0.15);
+      --border-focus:rgba(200,169,110,0.5);
+    }
+
+    body {
+      background-color: var(--forest);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      overflow: hidden;
+      cursor: none;
+    }
+
+    /* Cursor */
+    .cursor     { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform 0.1s ease; }
+    .cursor-ring{ position:fixed; width:36px; height:36px; border:1px solid rgba(200,169,110,0.4); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.18s ease; }
+
+    /* ── RIGHT PANEL (form — comes first visually on register) ── */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 60px;
+      background: rgba(10,16,11,0.6);
+      backdrop-filter: blur(8px);
+      border-right: 1px solid var(--border);
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .right-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .auth-form {
+      width: 100%;
+      max-width: 420px;
+      padding: 20px 0;
+    }
+
+    .form-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.3s ease forwards;
+    }
+
+    .form-eyebrow::before {
+      content: '';
+      display: block;
+      width: 24px; height: 1px;
+      background: var(--gold);
+    }
+
+    .form-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 44px;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 8px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.45s ease forwards;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+      color: var(--cream-dim);
+      font-weight: 300;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.6s ease forwards;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.75s ease forwards;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .field input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.3s ease, background 0.3s ease;
+    }
+
+    .field input::placeholder { color: rgba(196,186,168,0.3); }
+
+    .field input:focus {
+      border-color: var(--border-focus);
+      background: rgba(200,169,110,0.04);
+    }
+
+    /* Password strength */
+    .strength-bar {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .strength-seg {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      border-radius: 2px;
+      transition: background 0.4s ease;
+    }
+
+    .strength-seg.active-weak   { background: #e07070; }
+    .strength-seg.active-fair   { background: #e0b060; }
+    .strength-seg.active-strong { background: #6aad74; }
+
+    .strength-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-top: 4px;
+      height: 14px;
+      transition: color 0.3s;
+    }
+
+    /* Terms */
+    .terms-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.9s ease forwards;
+    }
+
+    .custom-checkbox {
+      position: relative;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .custom-checkbox input {
+      position: absolute;
+      opacity: 0;
+      width: 0; height: 0;
+    }
+
+    .checkmark {
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: transparent;
+      cursor: none;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .custom-checkbox input:checked + .checkmark {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+
+    .custom-checkbox input:checked + .checkmark::after {
+      content: '';
+      display: block;
+      width: 8px; height: 5px;
+      border-left: 1.5px solid var(--forest);
+      border-bottom: 1.5px solid var(--forest);
+      transform: rotate(-45deg) translateY(-1px);
+    }
+
+    .terms-text {
+      font-size: 12px;
+      color: var(--cream-dim);
+      line-height: 1.6;
+    }
+
+    .terms-text a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .terms-text a:hover { color: var(--gold-light); }
+
+    .btn-submit {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      background: var(--gold);
+      color: var(--forest);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 2px;
+      cursor: none;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      opacity: 0;
+      animation: fadeUp 0.8s 1.05s ease forwards;
+    }
+
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold-light);
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+    }
+
+    .btn-submit:hover::before { transform: translateX(0); }
+    .btn-submit span, .btn-submit svg { position: relative; z-index: 1; }
+    .btn-submit .arrow { transition: transform 0.3s ease; }
+    .btn-submit:hover .arrow { transform: translateX(4px); }
+
+    .form-footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 13px;
+      color: var(--text-muted);
+      opacity: 0;
+      animation: fadeUp 0.8s 1.2s ease forwards;
+    }
+
+    .form-footer a {
+      color: var(--gold);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .form-footer a:hover { color: var(--gold-light); }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      position: relative;
+      width: 42%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px 50px;
+      overflow: hidden;
+    }
+
+    .left-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 50%, rgba(45,74,39,0.3) 0%, transparent 65%),
+        linear-gradient(150deg, #0a1a0e 0%, #0e1a13 100%);
+    }
+
+    .left-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(200,169,110,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,169,110,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    .left-orb {
+      position: absolute;
+      width: 480px; height: 480px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(45,74,39,0.2) 0%, transparent 70%);
+      top: -100px; left: -100px;
+      animation: orbFloat 11s ease-in-out infinite alternate;
+    }
+
+    @keyframes orbFloat {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(30px, 50px) scale(1.07); }
+    }
+
+    .left-content { position: relative; z-index: 1; }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      text-decoration: none;
+      display: inline-block;
+      position: relative;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .logo::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+    }
+
+    .left-bottom { position: relative; z-index: 1; }
+
+    .left-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(34px, 3.5vw, 52px);
+      font-weight: 300;
+      line-height: 1.1;
+      color: var(--white);
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.4s ease forwards;
+    }
+
+    .left-quote em { font-style: italic; color: var(--gold); }
+
+    .left-desc {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--cream-dim);
+      line-height: 1.7;
+      max-width: 300px;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.6s ease forwards;
+    }
+
+    /* Feature list */
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.8s ease forwards;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .feature-icon {
+      width: 34px; height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      color: var(--gold);
+    }
+
+    .feature-text { font-size: 13px; color: var(--cream-dim); }
+
+    @keyframes fadeDown {
+      from { opacity:0; transform:translateY(-16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      body { flex-direction: column-reverse; overflow-y: auto; }
+      .left-panel { width: 100%; min-height: auto; padding: 40px 24px; }
+      .right-panel { padding: 40px 24px; border-right: none; border-bottom: 1px solid var(--border); overflow-y: visible; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Form Panel (left on register) -->
+  <div class="right-panel">
+    <div class="auth-form">
+      <div class="form-eyebrow">New account</div>
+      <h1 class="form-title">Create Account</h1>
+      <p class="form-subtitle">Join a community of safe travellers worldwide.</p>
+
+      <div class="field-group">
+        <div class="field-row">
+          <div class="field">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" placeholder="Jane">
+          </div>
+          <div class="field">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" placeholder="Doe">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="registerEmail">Email Address</label>
+          <input type="email" id="registerEmail" placeholder="you@example.com">
+        </div>
+
+        <div class="field">
+          <label for="registerPassword">Create Password</label>
+          <input type="password" id="registerPassword" placeholder="Min. 8 characters" oninput="checkStrength(this.value)">
+          <div class="strength-bar">
+            <div class="strength-seg" id="seg1"></div>
+            <div class="strength-seg" id="seg2"></div>
+            <div class="strength-seg" id="seg3"></div>
+            <div class="strength-seg" id="seg4"></div>
+          </div>
+          <div class="strength-label" id="strengthLabel"></div>
+        </div>
+      </div>
+
+      <div class="terms-row">
+        <label class="custom-checkbox">
+          <input type="checkbox" id="termsCheck">
+          <span class="checkmark"></span>
+        </label>
+        <p class="terms-text">
+          I agree to Safario's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+        </p>
+      </div>
+
+      <button class="btn-submit" onclick="register()">
+        <span>Create Account</span>
+        <svg class="arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <p class="form-footer">
+        Already have an account? <a href="login.html">Sign in →</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Info Panel -->
+  <div class="left-panel">
+    <div class="left-bg"></div>
+    <div class="left-grid"></div>
+    <div class="left-orb"></div>
+
+    <div class="left-content">
+      <a href="index.html" class="logo">Safario</a>
+    </div>
+
+    <div class="left-bottom">
+      <h2 class="left-quote">Your adventure<br>awaits with<br><em>confidence.</em></h2>
+      <p class="left-desc">Everything you need to travel safely — verified buddies, real-time check-ins, and a global support network.</p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">✓</div>
+          <span class="feature-text">Verified traveler profiles & ID checks</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">◉</div>
+          <span class="feature-text">Real-time location sharing & check-ins</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">✦</div>
+          <span class="feature-text">24/7 emergency support network</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Cursor
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove', e=>{
+      mx=e.clientX; my=e.clientY;
+      cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+    });
+    (function animateRing(){
+      rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+      ring.style.left=rx+'px'; ring.style.top=ry+'px';
+      requestAnimationFrame(animateRing);
+    })();
+    document.querySelectorAll('a,button,input,.checkmark').forEach(el=>{
+      el.addEventListener('mouseenter',()=>{ ring.style.transform='translate(-50%,-50%) scale(1.5)'; ring.style.borderColor='rgba(200,169,110,0.7)'; });
+      el.addEventListener('mouseleave',()=>{ ring.style.transform='translate(-50%,-50%) scale(1)'; ring.style.borderColor='rgba(200,169,110,0.4)'; });
+    });
+
+    // Password strength
+    function checkStrength(val) {
+      const segs   = [1,2,3,4].map(i => document.getElementById('seg'+i));
+      const label  = document.getElementById('strengthLabel');
+      const len    = val.length;
+      const hasUpper  = /[A-Z]/.test(val);
+      const hasNum    = /[0-9]/.test(val);
+      const hasSpecial = /[^A-Za-z0-9]/.test(val);
+      let score = 0;
+      if (len >= 6)  score++;
+      if (len >= 10) score++;
+      if (hasUpper && hasNum) score++;
+      if (hasSpecial) score++;
+
+      segs.forEach(s => s.className = 'strength-seg');
+
+      if (len === 0) { label.textContent = ''; return; }
+
+      const cls = score <= 1 ? 'active-weak' : score <= 2 ? 'active-fair' : 'active-strong';
+      const txt = score <= 1 ? 'Weak' : score <= 2 ? 'Fair' : score === 3 ? 'Good' : 'Strong';
+      const clr = score <= 1 ? '#e07070' : score <= 2 ? '#e0b060' : '#6aad74';
+
+      segs.slice(0, score+1).forEach(s => s.classList.add(cls));
+      label.textContent = txt;
+      label.style.color = clr;
+    }
+  </script>
+</body>
+</html>
